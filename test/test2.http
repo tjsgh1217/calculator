@@ -1,0 +1,8 @@
+GET https://seon.typicode.com/posts
+Content-Type: application/json;
+
+{
+    "userId": 25,
+    "title": "test",
+    "body": "hello world!"
+}
