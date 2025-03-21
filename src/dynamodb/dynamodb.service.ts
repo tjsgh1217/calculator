@@ -14,7 +14,6 @@ export class DynamoDBService {
   private readonly docClient: DynamoDBDocumentClient;
 
   constructor() {
-    // DynamoDB 클라이언트 설정
     const client = new DynamoDBClient({
       region: process.env.AWS_REGION as string,
       credentials: {
@@ -23,11 +22,16 @@ export class DynamoDBService {
       },
     });
 
-    // 문서 클라이언트 생성 (JavaScript 객체 ↔ DynamoDB 항목 변환 지원)
-    this.docClient = DynamoDBDocumentClient.from(client);
+    this.docClient = DynamoDBDocumentClient.from(client, {
+      marshallOptions: {
+        convertClassInstanceToMap: true,
+      },
+      unmarshallOptions: {
+        wrapNumbers: false,
+      },
+    });
   }
 
-  // 항목 생성/업데이트
   async put(tableName: string, item: Record<string, any>) {
     const command = new PutCommand({
       TableName: tableName,
@@ -37,7 +41,6 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  // 단일 항목 조회
   async get(tableName: string, key: Record<string, any>) {
     const command = new GetCommand({
       TableName: tableName,
@@ -47,7 +50,6 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  // 전체 항목 스캔
   async scan(tableName: string, options?: any) {
     const command = new ScanCommand({
       TableName: tableName,
@@ -57,7 +59,6 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  // 항목 업데이트
   async update(
     tableName: string,
     key: Record<string, any>,
@@ -77,7 +78,6 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  // 항목 삭제
   async delete(tableName: string, key: Record<string, any>) {
     const command = new DeleteCommand({
       TableName: tableName,
