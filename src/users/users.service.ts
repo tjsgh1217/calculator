@@ -81,14 +81,11 @@ export class UsersService {
   }
 
   private mapToUser(item: Record<string, any>): User {
-    const createdAt = new Date(item.createdAt);
-    const kstTime = new Date(createdAt.getTime() + 9 * 60 * 60 * 1000);
-
     return {
       userId: String(item.userId),
-      email: String(item.email),
       name: String(item.name),
-      createdAt: kstTime,
+      email: String(item.email),
+      createdAt: new Date(item.createdAt),
     };
   }
 }
