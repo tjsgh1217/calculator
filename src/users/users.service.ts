@@ -9,15 +9,18 @@ export class UsersService {
   constructor(private readonly dynamoDBService: DynamoDBService) {}
 
   async create(createUserDto: { email: string; name: string }): Promise<User> {
+    const now = new Date();
+    const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
     const newUser: User = {
       userId: crypto.randomUUID(),
       ...createUserDto,
-      createdAt: new Date(),
+      createdAt: kstTime,
     };
 
     const userForDb = {
       ...newUser,
-      createdAt: newUser.createdAt.toISOString(),
+      createdAt: kstTime.toISOString(),
     };
 
     await this.dynamoDBService.put(this.tableName, userForDb);
@@ -78,14 +81,14 @@ export class UsersService {
   }
 
   private mapToUser(item: Record<string, any>): User {
+    const createdAt = new Date(item.createdAt);
+    const kstTime = new Date(createdAt.getTime() + 9 * 60 * 60 * 1000);
+
     return {
       userId: String(item.userId),
       email: String(item.email),
       name: String(item.name),
-      createdAt:
-        item.createdAt instanceof Date
-          ? item.createdAt
-          : new Date(item.createdAt),
+      createdAt: kstTime,
     };
   }
 }
