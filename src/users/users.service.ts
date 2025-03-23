@@ -8,23 +8,39 @@ export class UsersService {
 
   constructor(private readonly dynamoDBService: DynamoDBService) {}
 
-  async create(createUserDto: { email: string; name: string }): Promise<User> {
-    const now = new Date();
-    const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  async create(createUserDto: {
+    email: string;
+    name: string;
+  }): Promise<User | { error: string }> {
+    try {
+      const existingUsers = await this.findAll();
+      const duplicateEmail = existingUsers.find(
+        (user) => user.email === createUserDto.email,
+      );
 
-    const newUser: User = {
-      userId: crypto.randomUUID(),
-      ...createUserDto,
-      createdAt: kstTime,
-    };
+      if (duplicateEmail) {
+        return { error: '이미 사용 중인 이메일입니다.' };
+      }
+      const now = new Date();
+      const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
-    const userForDb = {
-      ...newUser,
-      createdAt: kstTime.toISOString(),
-    };
+      const newUser: User = {
+        userId: crypto.randomUUID(),
+        ...createUserDto,
+        createdAt: kstTime,
+      };
 
-    await this.dynamoDBService.put(this.tableName, userForDb);
-    return newUser;
+      const userForDb = {
+        ...newUser,
+        createdAt: kstTime.toISOString(),
+      };
+
+      await this.dynamoDBService.put(this.tableName, userForDb);
+      return newUser;
+    } catch (error) {
+      console.error('사용자 생성 실패:', error);
+      return { error: '회원가입 중 오류가 발생했습니다.' };
+    }
   }
 
   async findAll(): Promise<User[]> {

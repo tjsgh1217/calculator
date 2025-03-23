@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그인</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <%- include('partials/header', {path: locals.path}) %>
+
+    <div class="container">
+      <div id="login">
+        <div class="login-header">
+          <h2>환영합니다</h2>
+          <p class="subtitle">계정에 로그인하세요</p>
+        </div>
+        
+        <form id="loginForm">
+          <div class="input-group">
+            <label for="name">이름</label>
+            <input type="text" id="name" placeholder="이름을 입력하세요" required />
+          </div>
+          
+          <div class="input-group">
+            <label for="email">이메일</label>
+            <input type="email" id="email" placeholder="이메일을 입력하세요" required />
+          </div>
+          
+          <button type="submit">로그인</button>
+        </form>
+        
+        <div class="divider">
+          <span>또는</span>
+        </div>
+        
+        <p class="signup-link">
+          계정이 없으신가요? <a href="/signup">회원가입</a>
+        </p>
+      </div>
+    </div>
+
+    <style>
+      body {
+        font-family: 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f8fa;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+      }
+
+      #login {
+        width: 380px;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+      }
+
+      #login:hover {
+        transform: translateY(-5px);
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      #login h2 {
+        color: #2c3e50;
+        margin-bottom: 8px;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .subtitle {
+        color: #7f8c8d;
+        margin-top: 0;
+        font-size: 16px;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #34495e;
+        font-weight: 500;
+      }
+
+      #login input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        font-size: 15px;
+        color: #333;
+        box-sizing: border-box;
+        transition: all 0.3s;
+      }
+
+      #login input:focus {
+        border-color: #3498db;
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        outline: none;
+      }
+
+      #login button {
+        width: 100%;
+        padding: 12px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background 0.3s;
+        margin-top: 10px;
+      }
+
+      #login button:hover {
+        background: #2980b9;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e0e0e0;
+      }
+
+      .divider span {
+        position: relative;
+        background: white;
+        padding: 0 15px;
+        color: #95a5a6;
+        font-size: 14px;
+      }
+
+      .signup-link {
+        text-align: center;
+        margin-top: 20px;
+        color: #7f8c8d;
+        font-size: 15px;
+      }
+
+      .signup-link a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .signup-link a:hover {
+        color: #2980b9;
+        text-decoration: underline;
+      }
+
+      @media (max-width: 480px) {
+        #login {
+          width: 90%;
+          padding: 30px;
+        }
+      }
+    </style>
+
+    <script>
+      document
+        .getElementById('loginForm')
+        .addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          const name = document.getElementById('name').value;
+          const email = document.getElementById('email').value;
+
+          const button = this.querySelector('button');
+          const originalText = button.textContent;
+          button.textContent = '로그인 중...';
+          button.disabled = true;
+
+          fetch('/users/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert('로그인 성공!');
+                window.location.href = '/';
+              } else {
+                alert('로그인에 실패했습니다. 이름과 이메일을 확인해주세요.');
+                button.textContent = originalText;
+                button.disabled = false;
+              }
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+              alert('오류가 발생했습니다. 다시 시도해주세요.');
+              button.textContent = originalText;
+              button.disabled = false;
+            });
+        });
+    </script>
+  </body>
+</html>

@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <h1><% message %></h1>
+    <%- include('partials/header', {path: locals.path}) %>
 
     <div id="calculator">
       <h2>Calculator</h2>
@@ -38,9 +39,17 @@
     </div>
 
     <style>
+      body {
+        font-family: 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f8fa;
+        color: #333;
+        line-height: 1.6;
+      }
       #calculator {
         width: 300px;
-        margin: 50px auto;
+        margin: 120px auto;
         padding: 25px;
         background: #f7f7f7;
         border: none;

@@ -6,7 +6,9 @@ import {
   Param,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 
@@ -14,11 +16,41 @@ import { User } from './entities/user.entity';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Post('login')
+  async login(
+    @Body() loginDto: { name: string; email: string },
+    @Req() req: Request,
+  ): Promise<{ success: boolean; user?: User }> {
+    try {
+      const users = await this.usersService.findAll();
+      const user = users.find(
+        (u) => u.name === loginDto.name && u.email === loginDto.email,
+      );
+
+      if (user) {
+        req.session['user'] = user;
+        req.session['isLoggedIn'] = true;
+        return { success: true, user };
+      } else {
+        return { success: false };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false };
+    }
+  }
+
   @Post()
   async create(
     @Body() createUserDto: { email: string; name: string },
-  ): Promise<User> {
-    return this.usersService.create(createUserDto);
+  ): Promise<User | { error: string; userId?: undefined }> {
+    const result = await this.usersService.create(createUserDto);
+
+    if ('error' in result) {
+      return { error: result.error };
+    }
+
+    return result;
   }
 
   @Get()
