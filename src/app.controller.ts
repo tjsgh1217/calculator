@@ -1,5 +1,6 @@
 import { Controller, Get, Render, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CalculationsService } from './calculations/calculations.service';
 
 @Controller()
 export class AppController {
@@ -44,5 +45,35 @@ export class AppController {
       }
       res.redirect('/');
     });
+  }
+
+  constructor(private readonly calculationsService: CalculationsService) {}
+
+  @Get('history')
+  @Render('history')
+  async getHistoryPage(@Req() req: Request) {
+    const isLoggedIn = req.session.isLoggedIn || false;
+
+    let history: { expression: string; result: string; createdAt: Date }[] = [];
+    if (isLoggedIn && req.session.user) {
+      try {
+        history = await this.calculationsService.getCalculationHistory(
+          req.session.user.userId,
+        );
+      } catch (error) {
+        console.error(
+          'Error fetching calculation history:',
+          error instanceof Error ? error.message : error,
+        );
+      }
+    }
+
+    return {
+      message: 'Calculation History',
+      path: '/history',
+      user: req.session.user || null,
+      isLoggedIn,
+      history,
+    };
   }
 }
