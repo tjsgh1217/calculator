@@ -37,6 +37,7 @@
         <button onclick="appendOperator('/')">/</button>
       </div>
     </div>
+    <div id="loginStatus" data-is-logged-in="<%= isLoggedIn %>"></div>
 
     <style>
       body {
@@ -56,14 +57,12 @@
         border-radius: 15px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
       }
-
       #calculator h2 {
         text-align: center;
         color: #333;
         margin-bottom: 20px;
         font-size: 24px;
       }
-
       #calculator input {
         width: 92%;
         padding: 15px;
@@ -75,7 +74,6 @@
         background: #fff;
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
       }
-
       #calculator button {
         width: 60px;
         height: 60px;
@@ -86,7 +84,6 @@
         border-radius: 10px;
         transition: all 0.2s ease;
       }
-
       #calculator button:nth-child(1),
       #calculator button:nth-child(2),
       #calculator button:nth-child(3),
@@ -95,27 +92,22 @@
         color: #333;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
-
       #calculator button:nth-child(4) {
         background: #ff9500;
         color: white;
       }
-
       #calculator div:last-child button:nth-child(2) {
         background: #ff3b30;
         color: white;
       }
-
       #calculator div:last-child button:nth-child(3) {
         background: #2196f3;
         color: white;
       }
-
       #calculator button:hover {
         transform: scale(0.95);
         opacity: 0.9;
       }
-
       #calculator div {
         display: flex;
         justify-content: center;
@@ -125,59 +117,94 @@
     </style>
 
     <script>
-      let currentInput = '';
-      let operator = '';
-      let previousInput = '';
+     let currentInput = '';
+     let operator = '';
+     let previousInput = '';
+     let expression = '';
+     let displayExpression = '';
 
-      function appendNumber(number) {
-        if (currentInput.length < 16) {
-          currentInput += number;
-          document.getElementById('display').value = currentInput;
-        }
-      }
+     function updateDisplay() {
+       const displayElement = document.getElementById('display');
+       displayElement.value = displayExpression;
+       setTimeout(() => {
+         displayElement.scrollLeft = displayElement.scrollWidth;
+       }, 0);
+     }
 
-      function appendOperator(op) {
-        if (currentInput === '') return;
-        previousInput = currentInput;
-        operator = op;
-        currentInput = '';
-      }
+     function appendNumber(number) {
+       if (currentInput.length < 16) {
+         currentInput += number;
+         displayExpression += number;
+         updateDisplay();
+       }
+     }
 
-      function clearDisplay() {
-        currentInput = '';
-        previousInput = '';
-        operator = '';
-        document.getElementById('display').value = '';
-      }
+     function appendOperator(op) {
+       if (currentInput === '' && previousInput === '') return;
+       if (currentInput !== '') {
+         previousInput = currentInput;
+         expression += previousInput;
+       }
+       operator = op;
+       expression += ' ' + operator + ' ';
+       displayExpression = expression;
+       currentInput = '';
+       updateDisplay();
+     }
 
-      function calculateResult() {
-        if (currentInput === '' || previousInput === '') return;
+     function clearDisplay() {
+       currentInput = '';
+       previousInput = '';
+       operator = '';
+       expression = '';
+       displayExpression = '';
+       updateDisplay();
+     }
 
-        let result;
-        switch (operator) {
-          case '+':
-            result = parseFloat(previousInput) + parseFloat(currentInput);
-            break;
-          case '-':
-            result = parseFloat(previousInput) - parseFloat(currentInput);
-            break;
-          case '*':
-            result = parseFloat(previousInput) * parseFloat(currentInput);
-            break;
-          case '/':
-            if (parseFloat(currentInput) === 0) {
-              alert('0으로 나눌 수 없습니다');
-              return;
-            }
-            result = parseFloat(previousInput) / parseFloat(currentInput);
-            break;
-          default:
-            return;
-        }
+     function calculateResult() {
+       if (currentInput === '' && previousInput === '') return;
+       if (currentInput !== '') {
+         expression += currentInput;
+       }
+       let result;
+       try {
+         const fullExpression = expression;
+         result = eval(expression);
+         previousInput = result.toString();
+         currentInput = '';
+         expression = previousInput;
+         displayExpression = fullExpression + ' = ' + result;
+         updateDisplay();
+         const isLoggedIn = document.getElementById('loginStatus').dataset.isLoggedIn === 'true';
+         if (isLoggedIn) {
+           saveCalculation(fullExpression, result.toString());
+         }
+       } catch (error) {
+         alert('계산 오류 발생');
+         return;
+       }
+     }
 
-        currentInput = result.toString();
-        document.getElementById('display').value = currentInput;
-      }
+     function saveCalculation(expression, result) {
+       fetch('/calculations/save', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ expression, result }),
+       })
+       .then(response => response.json())
+       .then(data => {
+         if (data.success) {
+           console.log('계산 기록이 저장되었습니다.');
+         } else {
+           console.error('계산 기록 저장 실패:', data.message);
+         }
+       })
+       .catch(error => {
+         console.error('계산 기록 저장 중 오류:', error);
+       });
+     }
     </script>
   </body>
 </html>
