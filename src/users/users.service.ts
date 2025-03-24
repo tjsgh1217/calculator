@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
   private readonly tableName = 'cal_table';
+  private readonly USER_RECORD_TYPE = 'USER';
 
   constructor(private readonly dynamoDBService: DynamoDBService) {}
 
@@ -26,6 +27,7 @@ export class UsersService {
 
       const newUser: User = {
         userId: crypto.randomUUID(),
+        calcId: this.USER_RECORD_TYPE,
         ...createUserDto,
         createdAt: kstTime,
       };
@@ -45,11 +47,17 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     const result = await this.dynamoDBService.scan(this.tableName);
-    return (result.Items || []).map((item) => this.mapToUser(item));
+    return (result.Items || [])
+      .filter((item) => item.calcId === this.USER_RECORD_TYPE)
+      .map((item) => this.mapToUser(item));
   }
 
   async findOne(userId: string): Promise<User | null> {
-    const result = await this.dynamoDBService.get(this.tableName, { userId });
+    const result = await this.dynamoDBService.get(
+      this.tableName,
+      userId,
+      this.USER_RECORD_TYPE,
+    );
     return result.Item ? this.mapToUser(result.Item) : null;
   }
 
@@ -83,7 +91,8 @@ export class UsersService {
 
     const result = await this.dynamoDBService.update(
       this.tableName,
-      { userId },
+      userId,
+      this.USER_RECORD_TYPE,
       `SET ${updateExpression}`,
       expressionAttributeValues,
       expressionAttributeNames,
@@ -93,12 +102,17 @@ export class UsersService {
   }
 
   async remove(userId: string): Promise<void> {
-    await this.dynamoDBService.delete(this.tableName, { userId });
+    await this.dynamoDBService.delete(
+      this.tableName,
+      userId,
+      this.USER_RECORD_TYPE,
+    );
   }
 
   private mapToUser(item: Record<string, any>): User {
     return {
       userId: String(item.userId),
+      calcId: String(item.calcId),
       name: String(item.name),
       email: String(item.email),
       createdAt: new Date(item.createdAt),

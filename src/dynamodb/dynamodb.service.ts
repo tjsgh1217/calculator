@@ -41,10 +41,10 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  async get(tableName: string, key: Record<string, any>) {
+  async get(tableName: string, userId: string, calcId: string) {
     const command = new GetCommand({
       TableName: tableName,
-      Key: key,
+      Key: { userId, calcId },
     });
 
     return this.docClient.send(command);
@@ -61,14 +61,15 @@ export class DynamoDBService {
 
   async update(
     tableName: string,
-    key: Record<string, any>,
+    userId: string,
+    calcId: string,
     updateExpression: string,
     expressionAttributeValues: Record<string, any>,
     expressionAttributeNames?: Record<string, string>,
   ) {
     const command = new UpdateCommand({
       TableName: tableName,
-      Key: key,
+      Key: { userId, calcId },
       UpdateExpression: updateExpression,
       ExpressionAttributeValues: expressionAttributeValues,
       ExpressionAttributeNames: expressionAttributeNames,
@@ -78,10 +79,10 @@ export class DynamoDBService {
     return this.docClient.send(command);
   }
 
-  async delete(tableName: string, key: Record<string, any>) {
+  async delete(tableName: string, userId: string, calcId: string) {
     const command = new DeleteCommand({
       TableName: tableName,
-      Key: key,
+      Key: { userId, calcId },
     });
 
     return this.docClient.send(command);
