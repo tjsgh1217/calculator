@@ -6,14 +6,82 @@ import { User } from './entities/user.entity';
 export class UsersService {
   private readonly tableName = 'cal_table';
   private readonly USER_RECORD_TYPE = 'USER';
+  private readonly validEmailDomains = [
+    'gmail.com',
+    'naver.com',
+    'daum.net',
+    'kakao.com',
+    'nate.com',
+  ];
 
   constructor(private readonly dynamoDBService: DynamoDBService) {}
+
+  private validateEmailDomain(email: string): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!email || !email.includes('@')) {
+      return { isValid: false, error: '유효하지 않은 이메일 형식입니다.' };
+    }
+
+    const localPart = email.split('@')[0];
+    const localPartRegex = /^[a-zA-Z][a-zA-Z0-9]*$/;
+
+    if (!localPartRegex.test(localPart)) {
+      return {
+        isValid: false,
+        error:
+          '이메일은 영문자로 시작해야 하며, 영문자와 숫자만 포함할 수 있습니다.',
+      };
+    }
+
+    const domain = email.split('@')[1];
+    if (!this.validEmailDomains.includes(domain)) {
+      return { isValid: false, error: '지원하지 않는 이메일 도메인입니다.' };
+    }
+
+    return { isValid: true };
+  }
+
+  private validateName(name: string): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!name || name.trim() === '') {
+      return { isValid: false, error: '이름을 입력해주세요.' };
+    }
+
+    const nameRegex = /^[가-힣a-zA-Z]+$/;
+
+    if (!nameRegex.test(name)) {
+      return {
+        isValid: false,
+        error: '이름은 한글 또는 영문만 입력 가능합니다.',
+      };
+    }
+
+    return { isValid: true };
+  }
 
   async create(createUserDto: {
     email: string;
     name: string;
   }): Promise<User | { error: string }> {
+    const nameValidation = this.validateName(createUserDto.name);
+    if (!nameValidation.isValid) {
+      return {
+        error: nameValidation.error || '이름 검증에 실패했습니다.',
+      };
+    }
+
     try {
+      const emailValidation = this.validateEmailDomain(createUserDto.email);
+      if (!emailValidation.isValid) {
+        return {
+          error: emailValidation.error || '이메일 검증에 실패했습니다.',
+        };
+      }
+
       const existingUsers = await this.findAll();
       const duplicateEmail = existingUsers.find(
         (user) => user.email === createUserDto.email,
@@ -65,6 +133,20 @@ export class UsersService {
     userId: string,
     updateUserDto: Partial<User>,
   ): Promise<User | null> {
+    if (updateUserDto.name) {
+      const nameValidation = this.validateName(updateUserDto.name);
+      if (!nameValidation.isValid) {
+        throw new Error(nameValidation.error || '이름 검증에 실패했습니다.');
+      }
+    }
+
+    if (updateUserDto.email) {
+      const emailValidation = this.validateEmailDomain(updateUserDto.email);
+      if (!emailValidation.isValid) {
+        throw new Error(emailValidation.error || '이메일 검증에 실패했습니다.');
+      }
+    }
+
     const updateExpression = Object.keys(updateUserDto)
       .map((k, i) => `#key${i} = :value${i}`)
       .join(', ');
