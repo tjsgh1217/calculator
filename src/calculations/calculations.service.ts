@@ -35,7 +35,9 @@ export class CalculationsService {
 
   async getCalculationHistory(
     userId: string,
-  ): Promise<{ expression: string; result: string; createdAt: Date }[]> {
+  ): Promise<
+    { calcId: string; expression: string; result: string; createdAt: Date }[]
+  > {
     try {
       const result = await this.dynamoDBService.scan(this.tableName, {
         FilterExpression: 'userId = :userId',
@@ -52,6 +54,7 @@ export class CalculationsService {
             );
 
             return {
+              calcId: item.calcId as string,
               expression: item.expression as string,
               result: item.result as string,
               createdAt: correctedDate,
@@ -63,6 +66,16 @@ export class CalculationsService {
     } catch (error) {
       console.error('계산 기록을 가져오는 중 오류 발생:', error);
       throw new Error('계산 기록을 가져오는데 실패');
+    }
+  }
+
+  async deleteCalculation(userId: string, calcId: string): Promise<void> {
+    try {
+      await this.dynamoDBService.delete(this.tableName, userId, calcId);
+      console.log(`계산 기록 삭제 성공: ${calcId}`);
+    } catch (error) {
+      console.error('계산 기록을 삭제하는 중 오류 발생:', error);
+      throw new Error('DynamoDB에서 계산 기록을 삭제하는데 실패');
     }
   }
 }
