@@ -64,6 +64,20 @@
       .back-btn:hover {
         background-color: #0056b3;
       }
+      .delete-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+  background-color: #ff0000;
+}
+
     </style>
   </head>
   <body>
@@ -79,6 +93,7 @@
               <th>날짜</th>
               <th>수식</th>
               <th>결과</th>
+              <th>삭제</th>
             </tr>
           </thead>
           <tbody>
@@ -87,6 +102,9 @@
                 <td><%= new Date(item.createdAt).toLocaleString() %></td>
                 <td><%= item.expression %></td>
                 <td><%= item.result %></td>
+                <td>
+                  <button class="delete-btn" data-calc-id="<%= item.calcId %>">삭제</button>
+                  </td>
               </tr>
             <% }) %>
           </tbody>
@@ -97,5 +115,49 @@
 
       <a href="/" class="back-btn">← 계산기로 돌아가기</a>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const calcId = this.getAttribute('data-calc-id');
+            
+            if (confirm('이 계산 기록을 삭제하시겠습니까?')) {
+              fetch(`/calculations/delete/${calcId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('서버 응답 오류: ' + response.status);
+                }
+                return response.json();
+              })
+              .then(data => {
+                if (data.success) {
+                  this.closest('tr').remove();
+                  
+                  const tableRows = document.querySelectorAll('tbody tr');
+                  if (tableRows.length === 0) {
+                    const table = document.querySelector('table');
+                    table.parentNode.innerHTML = '<p>계산 기록이 없습니다.</p>';
+                  }
+                } else {
+                  alert(data.message || '삭제에 실패했습니다.');
+                }
+              })
+              .catch(error => {
+                console.error('삭제 중 오류 발생:', error);
+                alert('삭제 중 오류가 발생했습니다: ' + error.message);
+              });
+            }
+          });
+        });
+      });
+    </script>
+    
   </body>
 </html>
