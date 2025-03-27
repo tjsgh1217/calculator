@@ -12,12 +12,20 @@ async function bootstrap() {
 
   app.use(
     session({
-      secret: process.env.USERS_SESSION_KEY as string,
+      secret: process.env.SESSION_KEY as string,
       resave: false,
       saveUninitialized: false,
-      cookie: { maxAge: 3600000 },
+      cookie: {
+        secure: false,
+        httpOnly: true,
+        sameSite: 'lax',
+      },
     }),
   );
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   await app.listen(3000);
 }
