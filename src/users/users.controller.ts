@@ -72,8 +72,18 @@ export class UsersController {
   }
 
   @Delete(':userId')
-  async remove(@Param('userId') userId: string): Promise<{ message: string }> {
+  async remove(
+    @Param('userId') userId: string,
+    @Req() req: Request,
+  ): Promise<{ message: string }> {
     await this.usersService.remove(userId);
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('세션 정리 중 오류 발생:', err);
+      }
+    });
+
     return { message: 'Success' };
   }
 }

@@ -7,6 +7,7 @@ import {
   ScanCommand,
   UpdateCommand,
   DeleteCommand,
+  QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
 
 @Injectable()
@@ -83,6 +84,19 @@ export class DynamoDBService {
     const command = new DeleteCommand({
       TableName: tableName,
       Key: { userId, calcId },
+    });
+
+    return this.docClient.send(command);
+  }
+  async query(
+    tableName: string,
+    keyConditionExpression: string,
+    expressionAttributeValues: Record<string, any>,
+  ) {
+    const command = new QueryCommand({
+      TableName: tableName,
+      KeyConditionExpression: keyConditionExpression,
+      ExpressionAttributeValues: expressionAttributeValues,
     });
 
     return this.docClient.send(command);

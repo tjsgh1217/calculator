@@ -184,11 +184,39 @@ export class UsersService {
   }
 
   async remove(userId: string): Promise<void> {
-    await this.dynamoDBService.delete(
-      this.tableName,
-      userId,
-      this.USER_RECORD_TYPE,
-    );
+    try {
+      const result = await this.dynamoDBService.query(
+        this.tableName,
+        'userId = :userId',
+        { ':userId': userId },
+      );
+
+      const items = result.Items || [];
+
+      const deletePromises = items
+        .filter((item) => item.calcId !== this.USER_RECORD_TYPE)
+        .map((item) =>
+          this.dynamoDBService.delete(this.tableName, item.userId, item.calcId),
+        );
+
+      if (deletePromises.length > 0) {
+        await Promise.all(deletePromises);
+      }
+
+      await this.dynamoDBService.delete(
+        this.tableName,
+        userId,
+        this.USER_RECORD_TYPE,
+      );
+
+      console.log(`사용자(${userId})와 관련된 모든 데이터가 삭제되었습니다.`);
+    } catch (error) {
+      console.error(
+        `사용자 및 관련 데이터 삭제 중 오류 발생 (userId: ${userId}):`,
+        error,
+      );
+      throw error;
+    }
   }
 
   private mapToUser(item: Record<string, any>): User {

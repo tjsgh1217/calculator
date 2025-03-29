@@ -37,6 +37,20 @@ export class AppController {
     };
   }
 
+  @Get('mypage')
+  @Render('mypage')
+  getMyPage(@Req() req: Request, @Res() res: Response) {
+    if (!req.session.isLoggedIn) {
+      return res.redirect('/login');
+    }
+    return {
+      message: 'My Page',
+      path: '/mypage',
+      user: req.session.user || null,
+      isLoggedIn: req.session.isLoggedIn || false,
+    };
+  }
+
   @Get('logout')
   logout(@Req() req: Request, @Res() res: Response) {
     req.session.destroy((err) => {

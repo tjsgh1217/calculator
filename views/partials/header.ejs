@@ -6,6 +6,9 @@
     <nav>
       <ul>
         <% if (locals.isLoggedIn && locals.user) { %>
+          <li class="my-info">
+            <a href="/mypage" class="<%= path === '/mypage' ? 'active' : '' %>">내 정보</a>
+          </li>
           <li class="history-link">
             <a href="/history">계산 기록</a>
           </li>
@@ -85,6 +88,11 @@
     font-weight: 500;
     padding: 8px 15px;
   }
+
+  .my-info {
+  margin-right: 30px; 
+  margin-left: -10px; 
+}
 
   nav a {
     color: white;

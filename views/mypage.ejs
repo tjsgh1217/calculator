@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0 ;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+
+        .content-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 80px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .profile-info {
+            margin-bottom: 15px;
+        }
+
+        .profile-info h3 {
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .profile-info p {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .page-title {
+            color: #333;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/header', {path: locals.path}) %>
+<div class="content-wrapper">
+    <h1 class="page-title">마이페이지</h1>
+    <div class="profile-container">
+        <div class="profile-info">
+            <h3>회원 정보</h3>
+            <p><span class="info-label">이름:</span> <%= user.name %></p>
+            <p><span class="info-label">이메일:</span> <%= user.email %></p>
+            <p><span class="info-label">가입날짜:</span> <%= new Date(new Date(user.createdAt).getTime() - 9 * 60 * 60 * 1000).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+        </div>
+    </div>
+
+    <div class="profile-container">
+        <h3>계정 관리</h3>
+        <button onclick="confirmWithdrawal()" class="btn btn-danger">회원 탈퇴</button>
+    </div>
+    </div>
+
+    <script>
+        function confirmWithdrawal() {
+            if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                fetch('/users/<%= user.userId %>', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('회원 탈퇴 중 오류가 발생했습니다.');
+                    })
+                    .then(data => {
+                        alert('회원 탈퇴가 완료되었습니다.');
+                        window.location.href = '/';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert(error.message);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
