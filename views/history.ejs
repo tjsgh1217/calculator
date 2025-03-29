@@ -13,11 +13,23 @@
         background-color: #f5f8fa;
         color: #333;
         line-height: 1.6;
+      }
+      
+      .header-wrapper {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      
+      .content-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
+        margin-top: 80px;
       }
+      
       .container {
         width: 1000px;
         padding: 40px;
@@ -27,6 +39,7 @@
         height: 80vh;
         overflow-y: auto;
       }
+      
       h1 {
         text-align: center;
         color: #333;
@@ -65,56 +78,61 @@
         background-color: #0056b3;
       }
       .delete-btn {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.delete-btn:hover {
-  background-color: #ff0000;
-}
-
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .delete-btn:hover {
+        background-color: #ff0000;
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>계산 기록</h1>
-
-      <% if (!isLoggedIn) { %>
-        <p>계산 기록을 보려면 로그인이 필요합니다.</p>
-      <% } else if (history && history.length > 0) { %>
-        <table>
-          <thead>
-            <tr>
-              <th>날짜</th>
-              <th>수식</th>
-              <th>결과</th>
-              <th>삭제</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% history.forEach(item => { %>
-              <tr>
-                <td><%= new Date(item.createdAt).toLocaleString() %></td>
-                <td><%= item.expression %></td>
-                <td><%= item.result %></td>
-                <td>
-                  <button class="delete-btn" data-calc-id="<%= item.calcId %>">삭제</button>
-                  </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } else { %>
-        <p>계산 기록이 없습니다.</p>
-      <% } %>
-
-      <a href="/" class="back-btn">← 계산기로 돌아가기</a>
+    <div class="header-wrapper">
+      <%- include('partials/header', {path: locals.path}) %>
     </div>
+
+    <div class="content-wrapper">
+      <div class="container">
+        <h1>계산 기록</h1>
+
+        <% if (!isLoggedIn) { %>
+          <p>계산 기록을 보려면 로그인이 필요합니다.</p>
+        <% } else if (history && history.length > 0) { %>
+          <table>
+            <thead>
+              <tr>
+                <th>날짜</th>
+                <th>수식</th>
+                <th>결과</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% history.forEach(item => { %>
+                <tr>
+                  <td><%= new Date(item.createdAt).toLocaleString() %></td>
+                  <td><%= item.expression %></td>
+                  <td><%= item.result %></td>
+                  <td>
+                    <button class="delete-btn" data-calc-id="<%= item.calcId %>">삭제</button>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>계산 기록이 없습니다.</p>
+        <% } %>
+
+        <a href="/" class="back-btn">← 계산기로 돌아가기</a>
+      </div>
+    </div>
+    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const deleteButtons = document.querySelectorAll('.delete-btn');
@@ -158,6 +176,5 @@
         });
       });
     </script>
-    
   </body>
 </html>
