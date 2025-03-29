@@ -143,7 +143,7 @@
                   const tableRows = document.querySelectorAll('tbody tr');
                   if (tableRows.length === 0) {
                     const table = document.querySelector('table');
-                    table.parentNode.innerHTML = '<p>계산 기록이 없습니다.</p>';
+                    table.parentNode.innerHTML = '<p>계산 기록이 없습니다.</p><a href="/" class="back-btn">← 계산기로 돌아가기</a>';
                   }
                 } else {
                   alert(data.message || '삭제에 실패했습니다.');
