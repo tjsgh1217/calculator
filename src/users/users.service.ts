@@ -202,29 +202,23 @@ export class UsersService {
     );
     return result.Item ? this.mapToUser(result.Item) : null;
   }
-
-  // ID로 사용자 찾기
   async findById(id: string): Promise<User | null> {
     const users = await this.findAll();
     const user = users.find((user) => user.id === id);
     return user || null;
   }
 
-  // 이름으로 사용자 찾기
   async findByName(name: string): Promise<User | null> {
     const users = await this.findAll();
     const user = users.find((user) => user.name === name);
     return user || null;
   }
-
-  // 이메일로 사용자 찾기
   async findByEmail(email: string): Promise<User | null> {
     const users = await this.findAll();
     const user = users.find((user) => user.email === email);
     return user || null;
   }
 
-  // 로그인 검증 (ID와 비밀번호로 변경)
   async validateUser(id: string, password: string): Promise<User | null> {
     const user = await this.findById(id);
     if (user && user.password === password) {
