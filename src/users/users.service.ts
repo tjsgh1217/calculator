@@ -16,6 +16,72 @@ export class UsersService {
 
   constructor(private readonly dynamoDBService: DynamoDBService) {}
 
+  private validateId(id: string): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!id || id.trim() === '') {
+      return { isValid: false, error: 'ID를 입력해주세요.' };
+    }
+
+    const idRegex = /^[a-zA-Z][a-zA-Z0-9]*$/;
+
+    if (!idRegex.test(id)) {
+      return {
+        isValid: false,
+        error:
+          'ID는 영문자로 시작해야 하며, 영문자와 숫자만 포함할 수 있습니다.',
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  private validateName(name: string): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!name || name.trim() === '') {
+      return { isValid: false, error: '이름을 입력해주세요.' };
+    }
+
+    const nameRegex = /^[가-힣a-zA-Z]+$/;
+
+    if (!nameRegex.test(name)) {
+      return {
+        isValid: false,
+        error: '이름은 한글 또는 영문만 입력 가능합니다.',
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  private validatePassword(password: string): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!password || password.length < 8) {
+      return {
+        isValid: false,
+        error: '비밀번호는 최소 8자 이상이어야 합니다.',
+      };
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasLetter || !hasNumber || !hasSpecial) {
+      return {
+        isValid: false,
+        error: '비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.',
+      };
+    }
+
+    return { isValid: true };
+  }
+
   private validateEmailDomain(email: string): {
     isValid: boolean;
     error?: string;
@@ -43,30 +109,26 @@ export class UsersService {
     return { isValid: true };
   }
 
-  private validateName(name: string): {
-    isValid: boolean;
-    error?: string;
-  } {
-    if (!name || name.trim() === '') {
-      return { isValid: false, error: '이름을 입력해주세요.' };
-    }
-
-    const nameRegex = /^[가-힣a-zA-Z]+$/;
-
-    if (!nameRegex.test(name)) {
-      return {
-        isValid: false,
-        error: '이름은 한글 또는 영문만 입력 가능합니다.',
-      };
-    }
-
-    return { isValid: true };
-  }
-
   async create(createUserDto: {
     email: string;
     name: string;
+    id: string;
+    password: string;
   }): Promise<User | { error: string }> {
+    const idValidation = this.validateId(createUserDto.id);
+    if (!idValidation.isValid) {
+      return {
+        error: idValidation.error || 'ID 검증에 실패했습니다.',
+      };
+    }
+
+    const passwordValidation = this.validatePassword(createUserDto.password);
+    if (!passwordValidation.isValid) {
+      return {
+        error: passwordValidation.error || '비밀번호 검증에 실패했습니다.',
+      };
+    }
+
     const nameValidation = this.validateName(createUserDto.name);
     if (!nameValidation.isValid) {
       return {
@@ -74,14 +136,14 @@ export class UsersService {
       };
     }
 
-    try {
-      const emailValidation = this.validateEmailDomain(createUserDto.email);
-      if (!emailValidation.isValid) {
-        return {
-          error: emailValidation.error || '이메일 검증에 실패했습니다.',
-        };
-      }
+    const emailValidation = this.validateEmailDomain(createUserDto.email);
+    if (!emailValidation.isValid) {
+      return {
+        error: emailValidation.error || '이메일 검증에 실패했습니다.',
+      };
+    }
 
+    try {
       const existingUsers = await this.findAll();
       const duplicateEmail = existingUsers.find(
         (user) => user.email === createUserDto.email,
@@ -90,13 +152,25 @@ export class UsersService {
       if (duplicateEmail) {
         return { error: '이미 사용 중인 이메일입니다.' };
       }
+
+      const duplicateId = existingUsers.find(
+        (user) => user.id === createUserDto.id,
+      );
+
+      if (duplicateId) {
+        return { error: '이미 사용 중인 ID입니다.' };
+      }
+
       const now = new Date();
       const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
       const newUser: User = {
         userId: crypto.randomUUID(),
         calcId: this.USER_RECORD_TYPE,
-        ...createUserDto,
+        name: createUserDto.name,
+        email: createUserDto.email,
+        id: createUserDto.id,
+        password: createUserDto.password,
         createdAt: kstTime,
       };
 
@@ -129,6 +203,36 @@ export class UsersService {
     return result.Item ? this.mapToUser(result.Item) : null;
   }
 
+  // ID로 사용자 찾기
+  async findById(id: string): Promise<User | null> {
+    const users = await this.findAll();
+    const user = users.find((user) => user.id === id);
+    return user || null;
+  }
+
+  // 이름으로 사용자 찾기
+  async findByName(name: string): Promise<User | null> {
+    const users = await this.findAll();
+    const user = users.find((user) => user.name === name);
+    return user || null;
+  }
+
+  // 이메일로 사용자 찾기
+  async findByEmail(email: string): Promise<User | null> {
+    const users = await this.findAll();
+    const user = users.find((user) => user.email === email);
+    return user || null;
+  }
+
+  // 로그인 검증 (ID와 비밀번호로 변경)
+  async validateUser(id: string, password: string): Promise<User | null> {
+    const user = await this.findById(id);
+    if (user && user.password === password) {
+      return user;
+    }
+    return null;
+  }
+
   async update(
     userId: string,
     updateUserDto: Partial<User>,
@@ -140,10 +244,27 @@ export class UsersService {
       }
     }
 
+    if (updateUserDto.id) {
+      const idValidation = this.validateId(updateUserDto.id);
+      if (!idValidation.isValid) {
+        throw new Error(idValidation.error || 'ID 검증에 실패했습니다.');
+      }
+    }
+
     if (updateUserDto.email) {
       const emailValidation = this.validateEmailDomain(updateUserDto.email);
       if (!emailValidation.isValid) {
         throw new Error(emailValidation.error || '이메일 검증에 실패했습니다.');
+      }
+    }
+
+    // 비밀번호 업데이트 시 검증
+    if (updateUserDto.password) {
+      const passwordValidation = this.validatePassword(updateUserDto.password);
+      if (!passwordValidation.isValid) {
+        throw new Error(
+          passwordValidation.error || '비밀번호 검증에 실패했습니다.',
+        );
       }
     }
 
@@ -225,6 +346,8 @@ export class UsersService {
       calcId: String(item.calcId),
       name: String(item.name),
       email: String(item.email),
+      id: String(item.id || ''),
+      password: String(item.password || ''), // 비밀번호 필드 추가
       createdAt: new Date(item.createdAt),
     };
   }

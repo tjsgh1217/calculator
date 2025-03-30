@@ -18,13 +18,13 @@ export class UsersController {
 
   @Post('login')
   async login(
-    @Body() loginDto: { name: string; email: string },
+    @Body() loginDto: { id: string; password: string },
     @Req() req: Request,
   ): Promise<{ success: boolean; user?: User }> {
     try {
-      const users = await this.usersService.findAll();
-      const user = users.find(
-        (u) => u.name === loginDto.name && u.email === loginDto.email,
+      const user = await this.usersService.validateUser(
+        loginDto.id,
+        loginDto.password,
       );
 
       if (user) {
@@ -42,7 +42,13 @@ export class UsersController {
 
   @Post()
   async create(
-    @Body() createUserDto: { email: string; name: string },
+    @Body()
+    createUserDto: {
+      email: string;
+      name: string;
+      id: string;
+      password: string;
+    },
   ): Promise<User | { error: string; userId?: undefined }> {
     const result = await this.usersService.create(createUserDto);
 

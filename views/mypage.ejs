@@ -87,6 +87,7 @@
     <div class="profile-container">
         <div class="profile-info">
             <h3>회원 정보</h3>
+            <p><span class="info-label">아이디:</span> <%= user.id %></p>
             <p><span class="info-label">이름:</span> <%= user.name %></p>
             <p><span class="info-label">이메일:</span> <%= user.email %></p>
             <p><span class="info-label">가입날짜:</span> <%= new Date(new Date(user.createdAt).getTime() - 9 * 60 * 60 * 1000).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
