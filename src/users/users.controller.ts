@@ -59,6 +59,33 @@ export class UsersController {
     return result;
   }
 
+  @Post('change-password')
+  async changePassword(
+    @Body() passwordData: { currentPassword: string; newPassword: string },
+    @Req() req: Request,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const user = req.session['user'];
+      if (!user || !user.userId) {
+        return { success: false, message: '로그인이 필요합니다.' };
+      }
+
+      const result = await this.usersService.changePassword(
+        user.userId,
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+
+      return result;
+    } catch (error) {
+      console.error('비밀번호 변경 중 오류 발생:', error);
+      return {
+        success: false,
+        message: '비밀번호 변경 중 오류가 발생했습니다.',
+      };
+    }
+  }
+
   @Get()
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();

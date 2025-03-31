@@ -252,7 +252,6 @@ export class UsersService {
       }
     }
 
-    // 비밀번호 업데이트 시 검증
     if (updateUserDto.password) {
       const passwordValidation = this.validatePassword(updateUserDto.password);
       if (!passwordValidation.isValid) {
@@ -333,6 +332,47 @@ export class UsersService {
       throw error;
     }
   }
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const user = await this.findOne(userId);
+
+      if (!user) {
+        return { success: false, message: '사용자를 찾을 수 없습니다.' };
+      }
+
+      if (user.password !== currentPassword) {
+        return {
+          success: false,
+          message: '현재 비밀번호가 일치하지 않습니다.',
+        };
+      }
+
+      const passwordValidation = this.validatePassword(newPassword);
+      if (!passwordValidation.isValid) {
+        return {
+          success: false,
+          message: passwordValidation.error || '비밀번호 검증에 실패했습니다.',
+        };
+      }
+
+      await this.update(userId, { password: newPassword });
+
+      return {
+        success: true,
+        message: '비밀번호가 성공적으로 변경되었습니다.',
+      };
+    } catch (error) {
+      console.error('비밀번호 변경 중 오류 발생:', error);
+      return {
+        success: false,
+        message: '비밀번호 변경 중 오류가 발생했습니다.',
+      };
+    }
+  }
 
   private mapToUser(item: Record<string, any>): User {
     return {
@@ -341,7 +381,7 @@ export class UsersService {
       name: String(item.name),
       email: String(item.email),
       id: String(item.id || ''),
-      password: String(item.password || ''), // 비밀번호 필드 추가
+      password: String(item.password || ''),
       createdAt: new Date(item.createdAt),
     };
   }
