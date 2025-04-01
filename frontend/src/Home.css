@@ -1,0 +1,84 @@
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f8fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+#calculator {
+  width: 300px;
+  margin: 120px auto;
+  padding: 25px;
+  background: #f7f7f7;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+#calculator h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+#calculator input {
+  width: 92%;
+  padding: 15px;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: right;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#calculator button {
+  width: 60px;
+  height: 60px;
+  font-size: 20px;
+  margin: 5px;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+#calculator button:nth-child(1),
+#calculator button:nth-child(2),
+#calculator button:nth-child(3),
+#calculator div:nth-child(4) button:first-child {
+  background: #fff;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#calculator button:nth-child(4) {
+  background: #ff9500;
+  color: white;
+}
+
+#calculator div:last-child button:nth-child(2) {
+  background: #ff3b30;
+  color: white;
+}
+
+#calculator div:last-child button:nth-child(3) {
+  background: #2196f3;
+  color: white;
+}
+
+#calculator button:hover {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+#calculator div {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}

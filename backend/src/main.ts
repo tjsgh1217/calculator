@@ -9,6 +9,11 @@ async function bootstrap() {
 
   app.setViewEngine('ejs');
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  });
 
   app.use(
     session({
@@ -27,6 +32,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(3000);
+  await app.listen(4000);
 }
 bootstrap();

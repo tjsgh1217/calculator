@@ -96,6 +96,14 @@ export class UsersController {
     return this.usersService.findOne(userId);
   }
 
+  @Get('session')
+  getSession(@Req() req: Request) {
+    return {
+      isLoggedIn: req.session.isLoggedIn || false,
+      user: req.session.user || null,
+    };
+  }
+
   @Patch(':userId')
   async update(
     @Param('userId') userId: string,
