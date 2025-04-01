@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { calculationApi } from './api';
+import * as math from 'mathjs';
 import './Home.css';
 
 const Calculator = ({ isLoggedIn }) => {
@@ -63,7 +64,9 @@ const Calculator = ({ isLoggedIn }) => {
 
     try {
       const fullExpression = newExpression;
-      const result = eval(newExpression);
+
+      const result = math.evaluate(newExpression);
+
       setPreviousInput(result.toString());
       setCurrentInput('');
       setExpression(result.toString());
