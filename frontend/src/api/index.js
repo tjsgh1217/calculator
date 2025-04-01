@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000';
+const API_URL = 'http://localhost:8080';
 
 const fetchWithCredentials = async (endpoint, options = {}) => {
   const defaultOptions = {

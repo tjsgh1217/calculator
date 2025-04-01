@@ -4,7 +4,7 @@ import './Home.css';
 
 const Calculator = ({ isLoggedIn }) => {
   const [currentInput, setCurrentInput] = useState('');
-  const [operator, setOperator] = useState('');
+  const [, setOperator] = useState('');
   const [previousInput, setPreviousInput] = useState('');
   const [expression, setExpression] = useState('');
   const [displayExpression, setDisplayExpression] = useState('');
