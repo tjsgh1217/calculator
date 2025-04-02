@@ -25,16 +25,19 @@ function App() {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          if (data.isLoggedIn && data.user) {
-            setIsLoggedIn(true);
-            setUser(data.user);
-          } else {
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-              const parsedUser = JSON.parse(savedUser);
+          const text = await response.text();
+          if (text) {
+            const data = JSON.parse(text);
+            if (data.isLoggedIn && data.user) {
               setIsLoggedIn(true);
-              setUser(parsedUser);
+              setUser(data.user);
+            } else {
+              const savedUser = localStorage.getItem('user');
+              if (savedUser) {
+                const parsedUser = JSON.parse(savedUser);
+                setIsLoggedIn(true);
+                setUser(parsedUser);
+              }
             }
           }
         }

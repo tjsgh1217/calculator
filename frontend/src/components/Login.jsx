@@ -39,16 +39,18 @@ const Login = ({ onLogin }) => {
           <p className="login-subtitle">계정에 로그인하세요</p>
         </div>
 
-        <form id="loginForm" onSubmit={handleSubmit}>
+        <form id="loginForm" onSubmit={handleSubmit} autoComplete="on">
           <div className="login-input-group">
             <label htmlFor="id">아이디</label>
             <input
               type="text"
               id="id"
+              name="username"
               placeholder="아이디를 입력하세요"
               required
               value={id}
               onChange={(e) => setId(e.target.value)}
+              autoComplete="username"
             />
           </div>
 
@@ -57,10 +59,12 @@ const Login = ({ onLogin }) => {
             <input
               type="password"
               id="password"
+              name="password"
               placeholder="비밀번호를 입력하세요"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
             />
           </div>
 

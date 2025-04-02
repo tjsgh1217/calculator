@@ -42,16 +42,18 @@ const Signup = () => {
           <p className="signup-subtitle">새로운 계정을 만들어보세요</p>
         </div>
 
-        <form id="signupForm" onSubmit={handleSubmit}>
+        <form id="signupForm" onSubmit={handleSubmit} autoComplete="on">
           <div className="signup-input-group">
             <label htmlFor="id">아이디</label>
             <input
               type="text"
               id="id"
+              name="username"
               placeholder="아이디를 입력하세요"
               required
               value={id}
               onChange={(e) => setId(e.target.value)}
+              autoComplete="username"
             />
           </div>
 
@@ -60,10 +62,12 @@ const Signup = () => {
             <input
               type="password"
               id="password"
+              name="new-password"
               placeholder="비밀번호를 입력하세요"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
             />
           </div>
 
@@ -72,10 +76,12 @@ const Signup = () => {
             <input
               type="text"
               id="name"
+              name="name"
               placeholder="이름을 입력하세요"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
             />
           </div>
 
@@ -84,10 +90,12 @@ const Signup = () => {
             <input
               type="email"
               id="email"
+              name="email"
               placeholder="이메일을 입력하세요"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
             />
           </div>
 

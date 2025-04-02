@@ -98,8 +98,15 @@ export class UsersController {
 
   @Get('session')
   getSession(@Req() req: Request) {
+    if (!req.session || !req.session.isLoggedIn) {
+      return {
+        isLoggedIn: false,
+        user: null,
+      };
+    }
+
     return {
-      isLoggedIn: req.session.isLoggedIn || false,
+      isLoggedIn: true,
       user: req.session.user || null,
     };
   }
