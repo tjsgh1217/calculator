@@ -25,30 +25,23 @@ function App() {
         });
 
         if (response.ok) {
-          const text = await response.text();
-          if (text) {
-            const data = JSON.parse(text);
-            if (data.isLoggedIn && data.user) {
-              setIsLoggedIn(true);
-              setUser(data.user);
-            } else {
-              const savedUser = localStorage.getItem('user');
-              if (savedUser) {
-                const parsedUser = JSON.parse(savedUser);
-                setIsLoggedIn(true);
-                setUser(parsedUser);
-              }
-            }
+          const data = await response.json();
+          if (data.isLoggedIn && data.user) {
+            setIsLoggedIn(true);
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          } else {
+            throw new Error('No session found');
           }
+        } else {
+          throw new Error('Response not OK');
         }
       } catch (error) {
         console.error('세션 확인 오류:', error);
-
         const savedUser = localStorage.getItem('user');
         if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
           setIsLoggedIn(true);
-          setUser(parsedUser);
+          setUser(JSON.parse(savedUser));
         }
       } finally {
         setLoading(false);

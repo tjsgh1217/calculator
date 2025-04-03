@@ -43,29 +43,10 @@
   width: 100px;
 }
 
-.mypage-btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.mypage-btn-danger:hover {
-  background-color: #c82333;
-}
-
 .mypage-page-title {
   color: #333;
   margin-bottom: 80px;
   text-align: center;
-}
-
-.mypage-btn-primary {
-  background-color: #007bff;
-  color: white;
-  margin-top: 10px;
-}
-
-.mypage-btn-primary:hover {
-  background-color: #0069d9;
 }
 
 .mypage-btn {
@@ -74,12 +55,50 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease-in-out;
   width: 100%;
   max-width: 140px;
+  margin-top: 9px;
 }
 
-/* 모달 스타일 */
+.mypage-btn-primary {
+  background: linear-gradient(135deg, #4caf50, #81c784);
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+}
+
+.mypage-btn-primary:hover {
+  background: linear-gradient(135deg, #388e3c, #66bb6a);
+  box-shadow: 0 6px 12px rgba(56, 142, 60, 0.3);
+  transform: translateY(-2px);
+}
+
+.mypage-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.mypage-btn-danger {
+  background: linear-gradient(135deg, #e53935, #ef5350);
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(229, 57, 53, 0.2);
+}
+
+.mypage-btn-danger:hover {
+  background: linear-gradient(135deg, #b71c1c, #d32f2f);
+  box-shadow: 0 6px 12px rgba(183, 28, 28, 0.3);
+  transform: translateY(-2px);
+}
+
+.mypage-btn-danger:active {
+  transform: translateY(1px);
+}
+
 .mypage-modal {
   display: block;
   position: fixed;
@@ -115,6 +134,9 @@
   font-weight: bold;
   cursor: pointer;
 }
+.mypage-close:hover {
+  color: #e53935;
+}
 
 .mypage-form-group {
   margin-bottom: 15px;
@@ -131,6 +153,7 @@
 .mypage-form-button {
   display: flex;
   justify-content: flex-end;
+  margin-top: 30px;
 }
 
 .mypage-error {
