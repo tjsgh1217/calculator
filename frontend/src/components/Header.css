@@ -4,7 +4,7 @@
 
 header {
   background: linear-gradient(135deg, #3498db, #2c3e50);
-  padding: 15px 0;
+  padding: 5px 0;
   margin-bottom: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
@@ -22,19 +22,14 @@ header {
   margin-left: -20px;
 }
 
-.logo a {
-  color: white;
-  font-size: 26px;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  transition: transform 0.3s ease;
-  display: inline-block;
-}
-
-.logo a:hover {
-  transform: scale(1.05);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+.logo img {
+  width: 100px;
+  height: auto;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 5px;
+  margin-top: 5px;
+  margin-left: -25px;
 }
 
 nav ul {
@@ -67,31 +62,12 @@ nav a {
   border-radius: 30px;
   font-weight: 500;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
 }
 
 nav a:hover {
   background-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
 }
 
 nav a.active {
-  background-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    padding: 10px;
-  }
-
-  .logo {
-    margin-bottom: 15px;
-  }
-
-  nav li {
-    margin: 0 10px;
-  }
+  background-color: rgba(255, 255, white, white);
 }

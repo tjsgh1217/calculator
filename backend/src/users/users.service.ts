@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBService } from '../dynamodb/dynamodb.service';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,7 @@ export class UsersService {
     'kakao.com',
     'nate.com',
   ];
+  private readonly saltRounds = 10;
 
   constructor(private readonly dynamoDBService: DynamoDBService) {}
 
@@ -164,13 +166,18 @@ export class UsersService {
       const now = new Date();
       const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        this.saltRounds,
+      );
+
       const newUser: User = {
         userId: crypto.randomUUID(),
         calcId: this.USER_RECORD_TYPE,
         name: createUserDto.name,
         email: createUserDto.email,
         id: createUserDto.id,
-        password: createUserDto.password,
+        password: hashedPassword,
         createdAt: kstTime,
       };
 
@@ -202,6 +209,7 @@ export class UsersService {
     );
     return result.Item ? this.mapToUser(result.Item) : null;
   }
+
   async findById(id: string): Promise<User | null> {
     const users = await this.findAll();
     const user = users.find((user) => user.id === id);
@@ -213,6 +221,7 @@ export class UsersService {
     const user = users.find((user) => user.name === name);
     return user || null;
   }
+
   async findByEmail(email: string): Promise<User | null> {
     const users = await this.findAll();
     const user = users.find((user) => user.email === email);
@@ -221,10 +230,14 @@ export class UsersService {
 
   async validateUser(id: string, password: string): Promise<User | null> {
     const user = await this.findById(id);
-    if (user && user.password === password) {
-      return user;
+
+    if (!user) {
+      return null;
     }
-    return null;
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    return isPasswordValid ? user : null;
   }
 
   async update(
@@ -332,6 +345,7 @@ export class UsersService {
       throw error;
     }
   }
+
   async changePassword(
     userId: string,
     currentPassword: string,
@@ -344,7 +358,11 @@ export class UsersService {
         return { success: false, message: '사용자를 찾을 수 없습니다.' };
       }
 
-      if (user.password !== currentPassword) {
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password,
+      );
+      if (!isPasswordValid) {
         return {
           success: false,
           message: '현재 비밀번호가 일치하지 않습니다.',
@@ -359,7 +377,8 @@ export class UsersService {
         };
       }
 
-      await this.update(userId, { password: newPassword });
+      const hashedNewPassword = await bcrypt.hash(newPassword, this.saltRounds);
+      await this.update(userId, { password: hashedNewPassword });
 
       return {
         success: true,

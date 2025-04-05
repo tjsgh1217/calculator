@@ -86,8 +86,11 @@ const MyPage = ({ user, onLogout }) => {
         });
 
         if (response.success) {
-          alert('비밀번호가 성공적으로 변경되었습니다.');
+          alert('비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.');
           closeModal();
+
+          onLogout();
+          navigate('/login');
         } else {
           if (response.message.includes('현재 비밀번호')) {
             setErrors({

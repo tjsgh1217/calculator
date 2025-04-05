@@ -4,6 +4,7 @@
   align-items: center;
   min-height: 80vh;
   font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 30px;
 }
 
 #signup-form {
@@ -80,7 +81,7 @@
   font-weight: 500;
   transition: background 0.3s, transform 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out;
-  margin-top: 10px;
+  margin-top: 13px;
 }
 
 .signup-button:hover:not(:disabled) {

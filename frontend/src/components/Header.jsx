@@ -10,7 +10,9 @@ const Header = ({ isLoggedIn, user }) => {
     <header>
       <div className="header-container">
         <div className="logo">
-          <Link to="/">Calculator</Link>
+          <Link to="/">
+            <img src="/serviceLogo.png" alt="Calculator Logo" />
+          </Link>
         </div>
         <nav>
           <ul>

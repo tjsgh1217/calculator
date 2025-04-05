@@ -6,6 +6,7 @@ import './Signup.css';
 const Signup = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +15,12 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await userApi.signup({ id, name, password, email });
@@ -67,6 +74,20 @@ const Signup = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div className="signup-input-group">
+            <label htmlFor="confirmPassword">비밀번호 재확인</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirm-password"
+              placeholder="비밀번호를 다시 입력하세요"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
             />
           </div>

@@ -63,7 +63,7 @@ export class UsersController {
   async changePassword(
     @Body() passwordData: { currentPassword: string; newPassword: string },
     @Req() req: Request,
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<{ success: boolean; message: string; requireRelogin?: boolean }> {
     try {
       const user = req.session['user'];
       if (!user || !user.userId) {
@@ -75,6 +75,19 @@ export class UsersController {
         passwordData.currentPassword,
         passwordData.newPassword,
       );
+
+      if (result.success) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('세션 파기 중 오류 발생:', err);
+          }
+        });
+
+        return {
+          ...result,
+          requireRelogin: true,
+        };
+      }
 
       return result;
     } catch (error) {

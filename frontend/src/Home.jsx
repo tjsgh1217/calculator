@@ -94,6 +94,28 @@ const Calculator = ({ isLoggedIn }) => {
     }
   };
 
+  const deleteLastChar = () => {
+    if (currentInput !== '') {
+      const newCurrentInput = currentInput.slice(0, -1);
+      setCurrentInput(newCurrentInput);
+      const newDisplayExpression = displayExpression.slice(0, -1);
+      setDisplayExpression(newDisplayExpression);
+    } else if (displayExpression !== '') {
+      let newDisplayExpression = displayExpression;
+
+      if (newDisplayExpression.slice(-1) === ' ') {
+        newDisplayExpression = newDisplayExpression.slice(0, -3);
+      } else if (newDisplayExpression.includes(' = ')) {
+        newDisplayExpression = newDisplayExpression.split(' = ')[0];
+      } else {
+        newDisplayExpression = newDisplayExpression.slice(0, -1);
+      }
+
+      setDisplayExpression(newDisplayExpression);
+      setExpression(newDisplayExpression);
+    }
+  };
+
   return (
     <div id="calculator">
       <h2>Calculator</h2>
@@ -127,6 +149,11 @@ const Calculator = ({ isLoggedIn }) => {
         <button onClick={clearDisplay}>C</button>
         <button onClick={calculateResult}>=</button>
         <button onClick={() => appendOperator('/')}>/</button>
+      </div>
+      <div>
+        <button onClick={deleteLastChar} className="delete-btn">
+          DEL
+        </button>
       </div>
     </div>
   );
