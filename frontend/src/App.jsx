@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,72 +11,93 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import MyPage from './components/Mypage';
 import History from './components/History';
+import { userApi, calculationApi } from './api/api';
+import { jwtDecode } from 'jwt-decode';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/users/session', {
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.isLoggedIn && data.user) {
-            setIsLoggedIn(true);
-            setUser(data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
-          } else {
-            throw new Error('No session found');
-          }
-        } else {
-          throw new Error('Response not OK');
-        }
-      } catch (error) {
-        console.error('세션 확인 오류:', error);
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-          setIsLoggedIn(true);
-          setUser(JSON.parse(savedUser));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSession();
-  }, []);
-
-  const handleLogin = (userData) => {
-    setIsLoggedIn(true);
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      const response = await fetch('/logout', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setIsLoggedIn(false);
-        setUser(null);
-        localStorage.removeItem('user');
-      } else {
-        throw new Error('로그아웃 실패');
-      }
-    } catch (error) {
-      console.error('로그아웃 오류:', error);
+      await calculationApi.logout();
+      localStorage.removeItem('token');
+      localStorage.removeItem('userDetails');
       setIsLoggedIn(false);
       setUser(null);
-      localStorage.removeItem('user');
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
     }
+  }, []);
+
+  const checkTokenExpiration = useCallback(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.exp * 1000 < Date.now()) {
+        handleLogout();
+      }
+    }
+  }, [handleLogout]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          checkTokenExpiration();
+          const response = await userApi.getProfile();
+          if (response && response.user) {
+            const storedUserDetails = JSON.parse(
+              localStorage.getItem('userDetails') || '{}'
+            );
+
+            const userData = {
+              ...response.user,
+              name: storedUserDetails.name,
+              id: storedUserDetails.id,
+              email: storedUserDetails.email,
+              createdAt: storedUserDetails.createdAt,
+            };
+
+            setIsLoggedIn(true);
+            setUser(userData);
+          } else {
+            throw new Error('사용자 정보를 가져올 수 없습니다.');
+          }
+        } catch (error) {
+          console.error('사용자 정보 조회 오류:', error);
+          handleLogout();
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const tokenCheckInterval = setInterval(checkTokenExpiration, 60000); // 1분마다 확인
+
+    return () => clearInterval(tokenCheckInterval);
+  }, [checkTokenExpiration, handleLogout]);
+
+  const handleLogin = (userData, token) => {
+    localStorage.setItem('token', token);
+
+    const essentialUserData = {
+      name: userData.name,
+      id: userData.id,
+      email: userData.email,
+      createdAt: userData.createdAt,
+    };
+
+    localStorage.setItem('userDetails', JSON.stringify(essentialUserData));
+
+    setIsLoggedIn(true);
+    setUser(userData);
   };
 
   if (loading) {

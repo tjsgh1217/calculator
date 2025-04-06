@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { calculationApi } from '../api';
+import { calculationApi } from '../api/api';
 import './History.css';
 
 const History = ({ isLoggedIn }) => {
@@ -19,7 +19,14 @@ const History = ({ isLoggedIn }) => {
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      const response = await calculationApi.getHistory();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('인증 정보가 유효하지 않습니다. 다시 로그인해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      const response = await calculationApi.getHistory(token);
 
       if (response.success) {
         setHistory(response.history);
@@ -37,7 +44,13 @@ const History = ({ isLoggedIn }) => {
   const handleDelete = async (calcId) => {
     if (window.confirm('이 계산 기록을 삭제하시겠습니까?')) {
       try {
-        const response = await calculationApi.deleteCalculation(calcId);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('인증 정보가 유효하지 않습니다. 다시 로그인해주세요.');
+          return;
+        }
+
+        const response = await calculationApi.deleteCalculation(calcId, token);
 
         if (response.success) {
           setHistory(history.filter((item) => item.calcId !== calcId));

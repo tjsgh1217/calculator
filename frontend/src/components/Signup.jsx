@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { userApi } from '../api';
+import { userApi } from '../api/api';
 import './Signup.css';
 
 const Signup = () => {

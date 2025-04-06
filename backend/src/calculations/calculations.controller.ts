@@ -6,34 +6,34 @@ import {
   Body,
   Req,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { CalculationsService } from './calculations.service';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtAuthGuard } from '../users/jwt-auth.guard';
+import { JwtPayload } from '../types/user.interface';
 
 @Controller('calculations')
 export class CalculationsController {
   constructor(private readonly calculationsService: CalculationsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('save')
   async saveCalculation(
     @Body() data: { expression: string; result: string },
     @Req() req: Request,
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      if (!req.session.isLoggedIn || !req.session.user) {
-        return { success: false, message: '로그인이 필요합니다' };
-      }
-
-      const userId = req.session.user.userId;
-      if (!userId) {
+      const user = req.user as JwtPayload;
+      if (!user || !user.userId) {
         return { success: false, message: '사용자 ID를 찾을 수 없습니다' };
       }
 
       const calcId = uuidv4();
 
       await this.calculationsService.saveCalculation({
-        userId,
+        userId: user.userId,
         calcId,
         expression: data.expression,
         result: data.result,
@@ -52,20 +52,18 @@ export class CalculationsController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('history')
   async getHistory(@Req() req: Request): Promise<any> {
     try {
-      if (!req.session.isLoggedIn || !req.session.user) {
-        return { success: false, message: '로그인이 필요합니다' };
-      }
-
-      const userId = req.session.user.userId;
-      if (!userId) {
+      const user = req.user as JwtPayload;
+      if (!user || !user.userId) {
         return { success: false, message: '사용자 ID를 찾을 수 없습니다' };
       }
 
-      const history =
-        await this.calculationsService.getCalculationHistory(userId);
+      const history = await this.calculationsService.getCalculationHistory(
+        user.userId,
+      );
       return { success: true, history };
     } catch (error) {
       return {
@@ -77,22 +75,20 @@ export class CalculationsController {
       };
     }
   }
+
+  @UseGuards(JwtAuthGuard)
   @Delete('delete/:calcId')
   async deleteCalculation(
     @Param('calcId') calcId: string,
     @Req() req: Request,
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      if (!req.session.isLoggedIn || !req.session.user) {
-        return { success: false, message: '로그인이 필요합니다' };
-      }
-
-      const userId = req.session.user.userId;
-      if (!userId) {
+      const user = req.user as JwtPayload;
+      if (!user || !user.userId) {
         return { success: false, message: '사용자 ID를 찾을 수 없습니다' };
       }
 
-      await this.calculationsService.deleteCalculation(userId, calcId);
+      await this.calculationsService.deleteCalculation(user.userId, calcId);
       return { success: true, message: '계산 기록이 삭제되었습니다' };
     } catch (error) {
       console.error('계산 기록 삭제 중 오류:', error);

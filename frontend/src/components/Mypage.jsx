@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userApi } from '../api';
+import { userApi } from '../api/api';
 import './Mypage.css';
 
 const MyPage = ({ user, onLogout }) => {

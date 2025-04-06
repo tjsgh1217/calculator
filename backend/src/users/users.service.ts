@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DynamoDBService } from '../dynamodb/dynamodb.service';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,10 @@ export class UsersService {
   ];
   private readonly saltRounds = 10;
 
-  constructor(private readonly dynamoDBService: DynamoDBService) {}
+  constructor(
+    private readonly dynamoDBService: DynamoDBService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   private validateId(id: string): {
     isValid: boolean;
@@ -391,6 +395,28 @@ export class UsersService {
         message: '비밀번호 변경 중 오류가 발생했습니다.',
       };
     }
+  }
+  async login(
+    id: string,
+    password: string,
+  ): Promise<{ access_token?: string; user?: User }> {
+    const user = await this.validateUser(id, password);
+
+    if (!user) {
+      return {};
+    }
+
+    const payload = { sub: user.userId, username: user.name };
+    const access_token = this.jwtService.sign(payload);
+
+    // 비밀번호 필드 제외하고 반환
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...result } = user;
+
+    return {
+      access_token,
+      user: result as User,
+    };
   }
 
   private mapToUser(item: Record<string, any>): User {

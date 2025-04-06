@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
 
 const Header = ({ isLoggedIn, user }) => {
   const location = useLocation();
   const path = location.pathname;
+  const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token && isLoggedIn);
+  }, [isLoggedIn]);
 
   return (
     <header>
@@ -16,7 +22,7 @@ const Header = ({ isLoggedIn, user }) => {
         </div>
         <nav>
           <ul>
-            {isLoggedIn && user ? (
+            {isAuthenticated && user ? (
               <>
                 <li className="my-info">
                   <Link

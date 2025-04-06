@@ -1,92 +1,90 @@
-import { Controller, Get, Render, Req, Res } from '@nestjs/common';
+import { Controller, Get, Render, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CalculationsService } from './calculations/calculations.service';
+import { JwtAuthGuard } from './users/jwt-auth.guard';
+import { JwtPayload } from './types/user.interface';
 
 @Controller()
 export class AppController {
+  constructor(private readonly calculationsService: CalculationsService) {}
+
   @Get('signup')
   @Render('signup')
-  getSignupPage(@Req() req: Request) {
+  getSignupPage() {
     return {
       message: 'Signup Page',
       path: '/signup',
-      user: req.session.user || null,
-      isLoggedIn: req.session.isLoggedIn || false,
+      user: null,
+      isLoggedIn: false,
     };
   }
 
   @Get('login')
   @Render('login')
-  getLoginPage(@Req() req: Request) {
+  getLoginPage() {
     return {
       message: 'Login Page',
       path: '/login',
-      user: req.session.user || null,
-      isLoggedIn: req.session.isLoggedIn || false,
+      user: null,
+      isLoggedIn: false,
     };
   }
 
   @Get()
   @Render('home')
-  root(@Req() req: Request) {
+  root() {
     return {
       message: 'test',
       path: '/',
-      user: req.session.user || null,
-      isLoggedIn: req.session.isLoggedIn || false,
+      user: null,
+      isLoggedIn: false,
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('mypage')
   @Render('mypage')
-  getMyPage(@Req() req: Request, @Res() res: Response) {
-    if (!req.session.isLoggedIn) {
-      return res.redirect('/login');
-    }
+  getMyPage(@Req() req: Request) {
     return {
       message: 'My Page',
       path: '/mypage',
-      user: req.session.user || null,
-      isLoggedIn: req.session.isLoggedIn || false,
+      user: req.user as string,
+      isLoggedIn: true,
     };
   }
 
   @Get('logout')
-  logout(@Req() req: Request, @Res() res: Response) {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Logout error:', err);
-      }
-      res.redirect('/');
-    });
+  logout(@Res() res: Response) {
+    res.redirect('/');
   }
 
-  constructor(private readonly calculationsService: CalculationsService) {}
-
+  @UseGuards(JwtAuthGuard)
   @Get('history')
   @Render('history')
   async getHistoryPage(@Req() req: Request) {
-    const isLoggedIn = req.session.isLoggedIn || false;
-
     let history: { expression: string; result: string; createdAt: Date }[] = [];
-    if (isLoggedIn && req.session.user) {
-      try {
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const user = req.user as JwtPayload;
+      if (user && user.sub) {
+        // JwtPayload에서는 userId 대신 sub 사용
         history = await this.calculationsService.getCalculationHistory(
-          req.session.user.userId,
-        );
-      } catch (error) {
-        console.error(
-          'Error fetching calculation history:',
-          error instanceof Error ? error.message : error,
+          user.sub,
         );
       }
+    } catch (error) {
+      console.error(
+        'Error fetching calculation history:',
+        error instanceof Error ? error.message : error,
+      );
     }
 
     return {
       message: 'Calculation History',
       path: '/history',
-      user: req.session.user || null,
-      isLoggedIn,
+      user: req.user as string,
+      isLoggedIn: true,
       history,
     };
   }

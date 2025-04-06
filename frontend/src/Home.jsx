@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { calculationApi } from './api';
+import { calculationApi } from './api/api';
 import * as math from 'mathjs';
 import './Home.css';
 
@@ -83,7 +83,14 @@ const Calculator = ({ isLoggedIn }) => {
 
   const saveCalculation = async (expression, result) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('인증 토큰이 없습니다.');
+        return;
+      }
+
       const response = await calculationApi.saveCalculation(expression, result);
+
       if (response.success) {
         console.log('계산 기록이 저장되었습니다.');
       } else {

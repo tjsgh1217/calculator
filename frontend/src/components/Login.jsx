@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { userApi } from '../api';
+import { userApi } from '../api/api';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -16,9 +16,10 @@ const Login = ({ onLogin }) => {
     try {
       const response = await userApi.login({ id, password });
 
-      if (response.success) {
+      if (response.success && response.access_token) {
         alert('로그인 성공!');
-        onLogin(response.user);
+
+        onLogin(response.user, response.access_token);
         navigate('/');
       } else {
         alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');

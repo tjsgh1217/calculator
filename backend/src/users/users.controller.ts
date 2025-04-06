@@ -7,10 +7,12 @@ import {
   Patch,
   Delete,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -19,18 +21,19 @@ export class UsersController {
   @Post('login')
   async login(
     @Body() loginDto: { id: string; password: string },
-    @Req() req: Request,
-  ): Promise<{ success: boolean; user?: User }> {
+  ): Promise<{ success: boolean; access_token?: string; user?: User }> {
     try {
-      const user = await this.usersService.validateUser(
+      const result = await this.usersService.login(
         loginDto.id,
         loginDto.password,
       );
 
-      if (user) {
-        req.session['user'] = user;
-        req.session['isLoggedIn'] = true;
-        return { success: true, user };
+      if (result.user) {
+        return {
+          success: true,
+          access_token: result.access_token,
+          user: result.user,
+        };
       } else {
         return { success: false };
       }
@@ -59,13 +62,14 @@ export class UsersController {
     return result;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   async changePassword(
     @Body() passwordData: { currentPassword: string; newPassword: string },
     @Req() req: Request,
   ): Promise<{ success: boolean; message: string; requireRelogin?: boolean }> {
     try {
-      const user = req.session['user'];
+      const user = req.user as { userId: string; username: string };
       if (!user || !user.userId) {
         return { success: false, message: '로그인이 필요합니다.' };
       }
@@ -77,12 +81,6 @@ export class UsersController {
       );
 
       if (result.success) {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error('세션 파기 중 오류 발생:', err);
-          }
-        });
-
         return {
           ...result,
           requireRelogin: true,
@@ -99,31 +97,29 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Req() req: Request) {
+    return {
+      isLoggedIn: true,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      user: req.user,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':userId')
   async findOne(@Param('userId') userId: string): Promise<User | null> {
     return this.usersService.findOne(userId);
   }
 
-  @Get('session')
-  getSession(@Req() req: Request) {
-    if (!req.session || !req.session.isLoggedIn) {
-      return {
-        isLoggedIn: false,
-        user: null,
-      };
-    }
-
-    return {
-      isLoggedIn: true,
-      user: req.session.user || null,
-    };
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Patch(':userId')
   async update(
     @Param('userId') userId: string,
@@ -132,19 +128,10 @@ export class UsersController {
     return this.usersService.update(userId, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':userId')
-  async remove(
-    @Param('userId') userId: string,
-    @Req() req: Request,
-  ): Promise<{ message: string }> {
+  async remove(@Param('userId') userId: string): Promise<{ message: string }> {
     await this.usersService.remove(userId);
-
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('세션 정리 중 오류 발생:', err);
-      }
-    });
-
     return { message: 'Success' };
   }
 }
