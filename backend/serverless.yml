@@ -8,11 +8,11 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: ap-northeast-2
-  httpApi:
-    cors: true
+
   environment:
     NODE_ENV: ${opt:stage, 'dev'}
     DYNAMODB_TABLE: cal_table
+
   iam:
     role:
       statements:
@@ -30,12 +30,14 @@ functions:
   api:
     handler: src/lambda.handler
     events:
-      - httpApi:
+      - http:
           method: ANY
           path: /
-      - httpApi:
+          cors: true
+      - http:
           method: ANY
-          path: /{proxy+}
+          path: '{proxy+}'
+          cors: true
 
 custom:
   serverless-offline:
