@@ -27,6 +27,7 @@ export class UsersController {
         loginDto.id,
         loginDto.password,
       );
+      console.log(loginDto.id, loginDto.password);
 
       if (result.user) {
         return {

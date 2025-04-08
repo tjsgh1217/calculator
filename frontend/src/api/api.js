@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080';
-
+const API_URL = 'https://jpwrkkp2sb.execute-api.ap-northeast-2.amazonaws.com';
+//여기 로컬작업시 8080으로
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -19,6 +19,8 @@ axiosInstance.interceptors.request.use((config) => {
 
 const axiosWithCredentials = async (endpoint, options = {}) => {
   try {
+    console.log('요청 URL:', axiosInstance.defaults.baseURL + endpoint);
+
     const response = await axiosInstance({
       url: endpoint,
       ...options,

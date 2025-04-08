@@ -4,6 +4,7 @@ import { DynamoDBModule } from './dynamodb/dynamodb.module';
 import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { CalculationsModule } from './calculations/calculations.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { CalculationsModule } from './calculations/calculations.module';
     DynamoDBModule,
     UsersModule,
     CalculationsModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [],

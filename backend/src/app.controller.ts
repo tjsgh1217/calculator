@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CalculationsService } from './calculations/calculations.service';
 import { JwtAuthGuard } from './users/jwt-auth.guard';
@@ -9,7 +9,6 @@ export class AppController {
   constructor(private readonly calculationsService: CalculationsService) {}
 
   @Get('signup')
-  @Render('signup')
   getSignupPage() {
     return {
       message: 'Signup Page',
@@ -20,7 +19,6 @@ export class AppController {
   }
 
   @Get('login')
-  @Render('login')
   getLoginPage() {
     return {
       message: 'Login Page',
@@ -31,7 +29,6 @@ export class AppController {
   }
 
   @Get()
-  @Render('home')
   root() {
     return {
       message: 'test',
@@ -43,16 +40,14 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('mypage')
-  @Render('mypage')
   getMyPage(@Req() req: Request) {
     return {
       message: 'My Page',
       path: '/mypage',
-      user: req.user as string,
+      user: req.user,
       isLoggedIn: true,
     };
   }
-
   @Get('logout')
   logout(@Res() res: Response) {
     res.redirect('/');
@@ -60,7 +55,6 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  @Render('history')
   async getHistoryPage(@Req() req: Request) {
     let history: { expression: string; result: string; createdAt: Date }[] = [];
 

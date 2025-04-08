@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBService } from '../dynamodb/dynamodb.service';
 import { User } from './entities/user.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -170,7 +170,7 @@ export class UsersService {
       const now = new Date();
       const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
-      const hashedPassword = await bcrypt.hash(
+      const hashedPassword = await bcryptjs.hash(
         createUserDto.password,
         this.saltRounds,
       );
@@ -239,7 +239,7 @@ export class UsersService {
       return null;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
 
     return isPasswordValid ? user : null;
   }
@@ -362,7 +362,7 @@ export class UsersService {
         return { success: false, message: '사용자를 찾을 수 없습니다.' };
       }
 
-      const isPasswordValid = await bcrypt.compare(
+      const isPasswordValid = await bcryptjs.compare(
         currentPassword,
         user.password,
       );
@@ -381,7 +381,10 @@ export class UsersService {
         };
       }
 
-      const hashedNewPassword = await bcrypt.hash(newPassword, this.saltRounds);
+      const hashedNewPassword = await bcryptjs.hash(
+        newPassword,
+        this.saltRounds,
+      );
       await this.update(userId, { password: hashedNewPassword });
 
       return {
