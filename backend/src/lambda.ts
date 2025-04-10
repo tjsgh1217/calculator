@@ -1,4 +1,3 @@
-// src/lambda.ts
 import { Handler, Context } from 'aws-lambda';
 import { Server } from 'http';
 import { createServer, proxy } from 'aws-serverless-express';
@@ -29,11 +28,9 @@ async function bootstrapServer(): Promise<Server> {
 }
 
 export const handler: Handler = async (event: any, context: Context) => {
-  console.log('Event:', JSON.stringify(event));
   try {
     cachedServer = await bootstrapServer();
     const result = await proxy(cachedServer, event, context, 'PROMISE').promise;
-    console.log('Response:', JSON.stringify(result));
     return result;
   } catch (error) {
     console.error('Error:', error);

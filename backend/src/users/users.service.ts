@@ -3,6 +3,7 @@ import { DynamoDBService } from '../dynamodb/dynamodb.service';
 import { User } from './entities/user.entity';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
